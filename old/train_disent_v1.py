@@ -39,6 +39,7 @@ py.arg('--guess_loss_weight', type=float, default=0.0)
 py.arg('--defence_noise_sigma', type=float, default=0.0)
 py.arg('--style_rec_weight', type=float, default=0.0)
 py.arg('--style_idt_weight', type=float, default=0.0)
+py.arg('--style_indep_weight', type=float, default=0.0)
 py.arg('--style_norm_weight', type=float, default=0.0)
 py.arg('--pool_size', type=int, default=50)  # pool size to store fake samples
 args = py.args()
@@ -49,6 +50,13 @@ py.mkdir(output_dir)
 
 # save settings
 py.args_to_yaml(py.join(output_dir, 'settings.yml'), args)
+
+if args.dataset == 'dshapes_split_color_vs_ori_size':
+    args.dataset_globs = (
+        '/scratch3/data/guess_disent/dshapes_split_color_vs_ori_size/trainA/*.png'
+        ':/scratch3/data/guess_disent/dshapes_split_color_vs_ori_size/trainB/*.png'
+        ':/scratch3/data/guess_disent/dshapes_split_color_vs_ori_size/testA/*.png'
+        ':/scratch3/data/guess_disent/dshapes_split_color_vs_ori_size/testB/*.png')
 
 if args.dataset_globs != '':
     img_paths = [glob.glob(x) for x in args.dataset_globs.split(':')]
@@ -116,14 +124,19 @@ def with_noise(t):
 @tf.function
 def train_G(A, B):
     with tf.GradientTape() as t:
-        s_a_rand = tf.random.normal((*A.shape[:-1], 1))
-        s_b_rand = tf.random.normal((*A.shape[:-1], 1))
+        s_a_rand_zero = tf.random.normal((*A.shape[:-1], 1))
+        s_b_rand_zero = tf.random.normal((*A.shape[:-1], 1))
+        _, s_a_rz = G_A2B_fn(A, s_a_rand_zero, training=True)
+        _, s_b_rz = G_B2A_fn(B, s_b_rand_zero, training=True)
+
+        s_a_rand = s_a_rz[::-1]
+        s_b_rand = s_b_rz[::-1]
         A2B, s_a = G_A2B_fn(A, s_b_rand, training=True)
         B2A, s_b = G_B2A_fn(B, s_a_rand, training=True)
         A2B2A, s_b_rand_rec = G_B2A_fn(with_noise(A2B), with_noise(s_a), training=True)
         B2A2B, s_a_rand_rec = G_A2B_fn(with_noise(B2A), with_noise(s_b), training=True)
-        A2A, s_a_idt = G_B2A_fn(A, s_a, training=True)
-        B2B, s_b_idt = G_A2B_fn(B, s_b, training=True)
+        A2A, _ = G_B2A_fn(A, s_a, training=True)
+        B2B, _ = G_A2B_fn(B, s_b, training=True)
 
         A2B_d_logits = D_B(A2B, training=True)
         B2A_d_logits = D_A(B2A, training=True)
@@ -148,12 +161,12 @@ def train_G(A, B):
             
             G_losses.append(args.style_rec_weight * style_rec_loss)
 
-        if args.style_idt_weight > 0:
-            style_idt_loss =  (
-                cycle_loss_fn(s_a, s_a_idt)
-                + cycle_loss_fn(s_b, s_b_idt))
+        if args.style_indep_weight > 0:
+            style_indep_loss =  (
+                cycle_loss_fn(s_a, s_a_rz)
+                + cycle_loss_fn(s_b, s_b_rz))
 
-            G_losses.append(args.style_idt_weight * style_idt_loss)
+            G_losses.append(args.style_indep_weight * style_indep_loss)
 
         if args.style_norm_weight > 0:
             style_norm_loss = (
@@ -196,7 +209,7 @@ def train_G(A, B):
         summary['style_rec_loss'] = style_rec_loss
 
     if args.style_idt_weight > 0:
-        summary['style_idt_loss'] = style_idt_loss
+        summary['style_indep_loss'] = style_indep_loss
 
     if args.style_norm_weight > 0:
         summary['style_norm_loss'] = style_norm_loss

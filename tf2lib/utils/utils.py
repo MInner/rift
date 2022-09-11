@@ -16,9 +16,9 @@ class Checkpoint:
         save_path = self.manager.latest_checkpoint if save_path is None else save_path
         return self.checkpoint.restore(save_path)
 
-    def save(self, file_prefix_or_checkpoint_number=None, session=None):
+    def save(self, file_prefix_or_checkpoint_number=None):
         if isinstance(file_prefix_or_checkpoint_number, str):
-            return self.checkpoint.save(file_prefix_or_checkpoint_number, session=session)
+            return self.checkpoint.save(file_prefix_or_checkpoint_number)
         else:
             return self.manager.save(checkpoint_number=file_prefix_or_checkpoint_number)
 
