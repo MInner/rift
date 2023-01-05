@@ -1,105 +1,28 @@
-***Recommendation***
+# RIFT
 
-- Our GAN based work for facial attribute editing - [AttGAN](https://github.com/LynnHo/AttGAN-Tensorflow).
+**RIFT: Disentangled Unsupervised Image Translation via Restricted Information Flow** </br>
+*IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) 2023*</br>
+<a href="https://ai.bu.edu/rift/">project page</a>
 
-***News***
+> Unsupervised image-to-image translation methods aim to map images from one domain into plausible examples from another domain while preserving the structure shared across two domains. In the many-to-many setting, an additional guidance example from the target domain is used to determine the domain-specific factors of variation of the generated image. In the absence of attribute annotations, methods have to infer which factors of variation are specific to each domain from data during training. In this paper, we show that many state-of-the-art architectures implicitly treat textures and colors as always being domain-specific, and thus fail when they are not. We propose a new method called RIFT that does not rely on such inductive architectural biases and instead infers which attributes are domain-specific vs shared directly from data. As a result, RIFT achieves consistently high cross-domain manipulation accuracy across multiple datasets spanning a wide variety of domain-specific and shared factors of variation.
 
-- We re-implement CycleGAN by **Tensorflow 2**! The old versions are here: [v1](https://github.com/LynnHo/CycleGAN-Tensorflow-PyTorch/tree/v1), [v0](https://github.com/LynnHo/CycleGAN-Tensorflow-PyTorch/tree/v0).
+<img src="https://ai.bu.edu/rift/rift-web-image.png" alt="metapose task" style="width:600px;"/>
 
-<hr style="height:1px" />
+If you use any of this code or its derivatives, please consider citing our work:
 
-<p align="center"> <img src="./pics/horse2zebra.gif" width="100%" /> </p>
+```
+@inproceedings{usman2023rift,
+    author    = {Usman, Ben and  Bashkirova, Dina and Saenko, Kate},
+    title     = {{RIFT}: Disentangled Unsupervised Image Translation via Restricted Information Flow},
+    booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+    month     = {January},
+    year      = {2023}
+}
 
-<hr style="height:1px" />
+```
 
-# <p align="center"> CycleGAN - Tensorflow 2 </p>
+---
 
-Tensorflow 2 implementation of CycleGAN.
+Training instructions, checkpoints, configs and datasets will be released shortly.
 
-Paper: [Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks](https://arxiv.org/pdf/1703.10593.pdf)
-
-Author: [Jun-Yan Zhu ](https://people.eecs.berkeley.edu/~junyanz/) *et al.*
-
-## Exemplar results
-
-### summer2winter
-
-row 1: summer -> winter -> reconstructed summer, row 2: winter -> summer -> reconstructed winter
-
-<p align="center"> <img src="./pics/summer2winter.jpg" width="100%" /> </p>
-
-### horse2zebra
-
-row 1: horse -> zebra -> reconstructed horse, row 2: zebra -> horse -> reconstructed zebra
-
-<p align="center"> <img src="./pics/horse2zebra.jpg" width="100%" /> </p>
-
-### apple2orange
-
-row 1: apple -> orange -> reconstructed apple, row 2: orange -> apple -> reconstructed orange
-
-<p align="center"> <img src="./pics/apple2orange.jpg" width="100%" /> </p>
-
-# Usage
-
-- Environment
-
-    - Python 3.6
-
-    - TensorFlow 2.2, TensorFlow Addons 0.10.0
-
-    - OpenCV, scikit-image, tqdm, oyaml
-
-    - *we recommend [Anaconda](https://www.anaconda.com/distribution/#download-section) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html#linux-installers), then you can create the TensorFlow 2.2 environment with commands below*
-
-        ```console
-        conda create -n tensorflow-2.2 python=3.6
-
-        source activate tensorflow-2.2
-
-        conda install scikit-image tqdm tensorflow-gpu=2.2
-
-        conda install -c conda-forge oyaml
-
-        pip install tensorflow-addons==0.10.0
-        ```
-
-    - *NOTICE: if you create a new conda environment, remember to activate it before any other command*
-
-        ```console
-        source activate tensorflow-2.2
-        ```
-
-- Dataset
-
-    - download the summer2winter dataset
-
-        ```console
-        sh ./download_dataset.sh summer2winter_yosemite
-        ```
-
-    - download the horse2zebra dataset
-
-        ```console
-        sh ./download_dataset.sh horse2zebra
-        ```
-
-    - see [download_dataset.sh](./download_dataset.sh) for more datasets
-
-- Example of training
-
-    ```console
-    CUDA_VISIBLE_DEVICES=0 python train.py --dataset summer2winter_yosemite
-    ```
-
-    - tensorboard for loss visualization
-
-        ```console
-        tensorboard --logdir ./output/summer2winter_yosemite/summaries --port 6006
-        ```
-
-- Example of testing
-
-    ```console
-    CUDA_VISIBLE_DEVICES=0 python test.py --experiment_dir ./output/summer2winter_yosemite
-    ```
+This implementation is heavily based on https://github.com/LynnHo/CycleGAN-Tensorflow-2 .
